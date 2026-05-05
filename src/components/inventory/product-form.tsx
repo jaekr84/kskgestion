@@ -386,33 +386,27 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                       <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
                         <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales por Sucursal
                       </Label>
-                      <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                        <table className="w-full border-collapse bg-white dark:bg-slate-900/50">
-                          <thead>
-                            <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-                              {branches.map((branch) => (
-                                <th key={branch.id} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center min-w-[140px]">
+                      <div className="rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 divide-x divide-y divide-slate-100 dark:divide-slate-800">
+                          {branches.map((branch) => (
+                            <div key={branch.id} className="bg-white dark:bg-slate-900/50 p-0 flex flex-col">
+                              <div className="bg-slate-50/80 dark:bg-slate-900 px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block text-center truncate">
                                   {branch.name}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              {branches.map((branch) => (
-                                <td key={branch.id} className="p-2 border-r last:border-r-0 border-slate-50 dark:border-slate-800/50">
-                                  <Input
-                                    type="number"
-                                    value={initialStock[branch.id]}
-                                    onChange={(e) => setInitialStock({ ...initialStock, [branch.id]: parseInt(e.target.value) || 0 })}
-                                    className="h-12 text-center bg-transparent border-none rounded-lg text-sm font-bold focus:bg-white dark:focus:bg-slate-800 transition-all focus:ring-0"
-                                    min="0"
-                                  />
-                                </td>
-                              ))}
-                            </tr>
-                          </tbody>
-                        </table>
+                                </span>
+                              </div>
+                              <div className="p-2">
+                                <Input
+                                  type="number"
+                                  value={initialStock[branch.id]}
+                                  onChange={(e) => setInitialStock({ ...initialStock, [branch.id]: parseInt(e.target.value) || 0 })}
+                                  className="h-10 text-center bg-transparent border-none rounded-lg text-sm font-bold focus:bg-white dark:focus:bg-slate-800 transition-all focus:ring-0"
+                                  min="0"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
