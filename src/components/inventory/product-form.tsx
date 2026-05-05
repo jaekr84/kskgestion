@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Package, Barcode, DollarSign, Tag, Hash, Boxes, Plus, Percent, Truck, Layers, AlertCircle } from "lucide-react";
+import { Package, Barcode, DollarSign, Tag, Hash, Boxes, Plus, Percent, Truck, Layers, AlertCircle, ChevronRight } from "lucide-react";
 import { createProductAction, updateProductAction } from "@/lib/actions/products";
 
 export function ProductForm({ branches, categories = [], suppliers = [], product, onSuccess }: {
