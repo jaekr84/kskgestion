@@ -1,10 +1,18 @@
 import { pgTable, serial, text, timestamp, integer, boolean, decimal } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // Tenants: Each client of the SaaS
 export const tenants = pgTable("tenants", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  province: text("province"),
+  city: text("city"),
+  cuit: text("cuit"),
+  taxCondition: text("tax_condition"), // Monotributo, Responsable Inscripto, Exento
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -14,7 +22,19 @@ export const branches = pgTable("branches", {
   tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
   name: text("name").notNull(),
   address: text("address"),
+  province: text("province"),
+  city: text("city"),
   isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Roles: Per-tenant customizable roles
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  name: text("name").notNull(), // e.g., "Admin", "Vendedor"
+  description: text("description"),
+  permissions: text("permissions").notNull().default("[]"), // Array of module keys: ["dashboard", "pos", ...]
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -22,11 +42,19 @@ export const branches = pgTable("branches", {
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  roleId: integer("role_id").references(() => roles.id),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  role: text("role").default("staff").notNull(), // admin, manager, staff
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Users to Branches: Many-to-many relationship for multi-branch access
+export const usersToBranches = pgTable("users_to_branches", {
+  userId: integer("user_id").references(() => users.id).notNull(),
+  branchId: integer("branch_id").references(() => branches.id).notNull(),
+}, (t) => ({
+  pk: [t.userId, t.branchId],
+}));
 
 // Products: Shared within a tenant but can have specific stock per branch
 export const products = pgTable("products", {
@@ -50,3 +78,49 @@ export const inventory = pgTable("inventory", {
   stock: integer("stock").default(0).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// Relations
+export const tenantsRelations = relations(tenants, ({ many }) => ({
+  branches: many(branches),
+  users: many(users),
+  roles: many(roles),
+}));
+
+export const branchesRelations = relations(branches, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [branches.tenantId],
+    references: [tenants.id],
+  }),
+  userAssignments: many(usersToBranches),
+}));
+
+export const rolesRelations = relations(roles, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [roles.tenantId],
+    references: [tenants.id],
+  }),
+  users: many(users),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [users.tenantId],
+    references: [tenants.id],
+  }),
+  role: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id],
+  }),
+  branchAssignments: many(usersToBranches),
+}));
+
+export const usersToBranchesRelations = relations(usersToBranches, ({ one }) => ({
+  user: one(users, {
+    fields: [usersToBranches.userId],
+    references: [users.id],
+  }),
+  branch: one(branches, {
+    fields: [usersToBranches.branchId],
+    references: [branches.id],
+  }),
+}));
