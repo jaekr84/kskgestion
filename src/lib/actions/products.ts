@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { products, inventory, branches } from "@/db/schema";
+import { products, inventory, branches, productCategories, suppliers } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getTenantId } from "./tenants";
@@ -29,11 +29,32 @@ export async function createProductAction(data: {
   minStock?: number;
   categoryId?: number;
   supplierId?: number;
+  newCategoryName?: string;
+  newSupplierName?: string;
   externalSku?: string;
   initialStock?: { branchId: number; stock: number }[];
 }) {
   try {
     const tenantId = await getTenantId();
+    let { categoryId, supplierId } = data;
+
+    // Find or Create Category
+    if (!categoryId && data.newCategoryName) {
+      const [newCat] = await db.insert(productCategories).values({
+        tenantId,
+        name: data.newCategoryName,
+      }).returning();
+      categoryId = newCat.id;
+    }
+
+    // Find or Create Supplier
+    if (!supplierId && data.newSupplierName) {
+      const [newSup] = await db.insert(suppliers).values({
+        tenantId,
+        name: data.newSupplierName,
+      }).returning();
+      supplierId = newSup.id;
+    }
 
     const [newProduct] = await db.insert(products).values({
       tenantId: tenantId,
@@ -47,8 +68,8 @@ export async function createProductAction(data: {
       iva: data.iva?.toString(),
       priceIncludesIva: data.priceIncludesIva,
       minStock: data.minStock,
-      categoryId: data.categoryId,
-      supplierId: data.supplierId,
+      categoryId: categoryId,
+      supplierId: supplierId,
       externalSku: data.externalSku,
     }).returning();
 
@@ -82,10 +103,31 @@ export async function updateProductAction(id: number, data: {
   minStock?: number;
   categoryId?: number;
   supplierId?: number;
+  newCategoryName?: string;
+  newSupplierName?: string;
   externalSku?: string;
 }) {
   try {
     const tenantId = await getTenantId();
+    let { categoryId, supplierId } = data;
+
+    // Find or Create Category
+    if (!categoryId && data.newCategoryName) {
+      const [newCat] = await db.insert(productCategories).values({
+        tenantId,
+        name: data.newCategoryName,
+      }).returning();
+      categoryId = newCat.id;
+    }
+
+    // Find or Create Supplier
+    if (!supplierId && data.newSupplierName) {
+      const [newSup] = await db.insert(suppliers).values({
+        tenantId,
+        name: data.newSupplierName,
+      }).returning();
+      supplierId = newSup.id;
+    }
 
     await db.update(products)
       .set({
@@ -99,8 +141,8 @@ export async function updateProductAction(id: number, data: {
         iva: data.iva?.toString(),
         priceIncludesIva: data.priceIncludesIva,
         minStock: data.minStock,
-        categoryId: data.categoryId,
-        supplierId: data.supplierId,
+        categoryId: categoryId,
+        supplierId: supplierId,
         externalSku: data.externalSku,
       })
       .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Package, Barcode, DollarSign, Tag, Hash, Boxes, Plus, Percent, Truck, Layers, AlertCircle, ChevronRight, Sparkles } from "lucide-react";
 import { createProductAction, updateProductAction, generateUniqueBarcodeAction } from "@/lib/actions/products";
+import { CreatableCombobox } from "@/components/ui/creatable-combobox";
 
 export function ProductForm({ branches, categories = [], suppliers = [], product, onSuccess }: {
   branches: any[],
@@ -34,6 +35,8 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
     minStock: product?.minStock || "0",
     categoryId: product?.categoryId?.toString() || "",
     supplierId: product?.supplierId?.toString() || "",
+    newCategoryName: "",
+    newSupplierName: "",
   });
 
   const [initialStock, setInitialStock] = useState<Record<number, number>>(
@@ -97,7 +100,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
       if (!product) setFormData({
         name: "", description: "", sku: "", externalSku: "", barcode: "", price: "", cost: "",
         markup: "0", iva: "21", priceIncludesIva: true, minStock: "0",
-        categoryId: "", supplierId: ""
+        categoryId: "", supplierId: "", newCategoryName: "", newSupplierName: ""
       });
       onSuccess?.();
     }
@@ -175,42 +178,41 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                         required
                         className="pl-12 h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl text-lg font-medium focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                       />
-                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label htmlFor="categoryId" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Categoría</Label>
-                      <Select value={formData.categoryId} onValueChange={(val) => setFormData({ ...formData, categoryId: val })}>
-                        <SelectTrigger className="h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm">
-                          <div className="flex items-center gap-3">
-                            <Layers className="w-4 h-4 text-slate-400" />
-                            <SelectValue placeholder="Seleccionar..." />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl shadow-2xl border-slate-100">
-                          {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id.toString()} className="rounded-xl my-1">{cat.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Proveedor</Label>
+                      <CreatableCombobox
+                        options={suppliers}
+                        value={formData.supplierId}
+                        onSelect={(id, name) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            supplierId: id?.toString() || "",
+                            newSupplierName: id ? "" : name
+                          }));
+                        }}
+                        placeholder="Buscar o crear proveedor..."
+                        icon={<Truck className="size-4 text-slate-400" />}
+                      />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="supplierId" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Proveedor</Label>
-                      <Select value={formData.supplierId} onValueChange={(val) => setFormData({ ...formData, supplierId: val })}>
-                        <SelectTrigger className="h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm">
-                          <div className="flex items-center gap-3">
-                            <Truck className="w-4 h-4 text-slate-400" />
-                            <SelectValue placeholder="Seleccionar..." />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl shadow-2xl border-slate-100">
-                          {suppliers.map((sup) => (
-                            <SelectItem key={sup.id} value={sup.id.toString()} className="rounded-xl my-1">{sup.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Categoría</Label>
+                      <CreatableCombobox
+                        options={categories}
+                        value={formData.categoryId}
+                        onSelect={(id, name) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            categoryId: id?.toString() || "",
+                            newCategoryName: id ? "" : name
+                          }));
+                        }}
+                        placeholder="Buscar o crear categoría..."
+                        icon={<Layers className="size-4 text-slate-400" />}
+                      />
                     </div>
                   </div>
                 </div>
@@ -325,8 +327,8 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                   </div>
 
                   <div className="flex items-center space-x-3 py-1 px-1">
-                    <Checkbox 
-                      id="priceIncludesIva" 
+                    <Checkbox
+                      id="priceIncludesIva"
                       checked={formData.priceIncludesIva}
                       onCheckedChange={(checked) => setFormData({ ...formData, priceIncludesIva: !!checked })}
                       className="border-slate-300 dark:border-slate-700 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
@@ -387,7 +389,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                         <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales por Sucursal
                       </Label>
                       <div className="rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 divide-x divide-y divide-slate-100 dark:divide-slate-800">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 divide-x divide-y divide-slate-100 dark:divide-slate-800">
                           {branches.map((branch) => (
                             <div key={branch.id} className="bg-white dark:bg-slate-900/50 p-0 flex flex-col">
                               <div className="bg-slate-50/80 dark:bg-slate-900 px-3 py-2 border-b border-slate-100 dark:border-slate-800">
