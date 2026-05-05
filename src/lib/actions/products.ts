@@ -130,3 +130,32 @@ export async function deleteProductAction(id: number) {
     return { success: false, error: "Error al eliminar el producto" };
   }
 }
+
+export async function generateUniqueBarcodeAction() {
+  try {
+    const tenantId = await getTenantId();
+    let isUnique = false;
+    let barcode = "";
+    let attempts = 0;
+
+    while (!isUnique && attempts < 10) {
+      // Generate a 13-digit random number (EAN-13 style prefix 779 for Argentina)
+      const randomPart = Math.floor(Math.random() * 1000000000).toString().padStart(9, "0");
+      barcode = `779${randomPart}1`; // Fixed prefix and suffix for simplicity
+      
+      const existing = await db.query.products.findFirst({
+        where: and(eq(products.tenantId, tenantId), eq(products.barcode, barcode))
+      });
+
+      if (!existing) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+
+    return { success: true, barcode };
+  } catch (error) {
+    console.error("Error generating barcode:", error);
+    return { success: false, error: "Error al generar código" };
+  }
+}

@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Package, Barcode, DollarSign, Tag, Hash, Boxes, Plus, Percent, Truck, Layers, AlertCircle, ChevronRight } from "lucide-react";
-import { createProductAction, updateProductAction } from "@/lib/actions/products";
+import { Package, Barcode, DollarSign, Tag, Hash, Boxes, Plus, Percent, Truck, Layers, AlertCircle, ChevronRight, Sparkles } from "lucide-react";
+import { createProductAction, updateProductAction, generateUniqueBarcodeAction } from "@/lib/actions/products";
 
 export function ProductForm({ branches, categories = [], suppliers = [], product, onSuccess }: {
   branches: any[],
@@ -19,6 +19,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 }) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingBarcode, setIsGeneratingBarcode] = useState(false);
   const [formData, setFormData] = useState({
     name: product?.name || "",
     description: product?.description || "",
@@ -99,9 +100,16 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
         categoryId: "", supplierId: ""
       });
       onSuccess?.();
-    } else {
-      alert(result.error);
     }
+  };
+
+  const handleGenerateBarcode = async () => {
+    setIsGeneratingBarcode(true);
+    const result = await generateUniqueBarcodeAction();
+    if (result.success && result.barcode) {
+      setFormData(prev => ({ ...prev, barcode: result.barcode }));
+    }
+    setIsGeneratingBarcode(false);
   };
 
   return (
@@ -254,6 +262,17 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                         placeholder="779..."
                         className="pl-10 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleGenerateBarcode}
+                        disabled={isGeneratingBarcode}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                        title="Generar Código Aleatorio"
+                      >
+                        <Sparkles className={`w-4 h-4 ${isGeneratingBarcode ? 'animate-spin' : ''}`} />
+                      </Button>
                     </div>
                   </div>
                 </div>
