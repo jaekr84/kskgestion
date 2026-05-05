@@ -5,6 +5,7 @@ import { products, inventory, branches, productCategories, suppliers } from "@/d
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getTenantId } from "./tenants";
+import { capitalize } from "@/lib/utils";
 
 export async function getProductsAction() {
   const tenantId = await getTenantId();
@@ -35,30 +36,35 @@ export async function createProductAction(data: {
   initialStock?: { branchId: number; stock: number }[];
 }) {
   try {
+    console.log("Creating product with data:", { ...data, newCategoryName: data.newCategoryName, newSupplierName: data.newSupplierName });
     const tenantId = await getTenantId();
     let { categoryId, supplierId } = data;
 
     // Find or Create Category
     if (!categoryId && data.newCategoryName) {
+      console.log("Creating new category:", data.newCategoryName);
       const [newCat] = await db.insert(productCategories).values({
         tenantId,
-        name: data.newCategoryName,
+        name: capitalize(data.newCategoryName),
       }).returning();
       categoryId = newCat.id;
+      console.log("New category created with ID:", categoryId);
     }
 
     // Find or Create Supplier
     if (!supplierId && data.newSupplierName) {
+      console.log("Creating new supplier:", data.newSupplierName);
       const [newSup] = await db.insert(suppliers).values({
         tenantId,
-        name: data.newSupplierName,
+        name: capitalize(data.newSupplierName),
       }).returning();
       supplierId = newSup.id;
+      console.log("New supplier created with ID:", supplierId);
     }
 
     const [newProduct] = await db.insert(products).values({
       tenantId: tenantId,
-      name: data.name,
+      name: capitalize(data.name),
       description: data.description,
       sku: data.sku,
       barcode: data.barcode,
@@ -108,30 +114,35 @@ export async function updateProductAction(id: number, data: {
   externalSku?: string;
 }) {
   try {
+    console.log("Updating product with data:", { ...data, newCategoryName: data.newCategoryName, newSupplierName: data.newSupplierName });
     const tenantId = await getTenantId();
     let { categoryId, supplierId } = data;
 
     // Find or Create Category
     if (!categoryId && data.newCategoryName) {
+      console.log("Creating new category during update:", data.newCategoryName);
       const [newCat] = await db.insert(productCategories).values({
         tenantId,
-        name: data.newCategoryName,
+        name: capitalize(data.newCategoryName),
       }).returning();
       categoryId = newCat.id;
+      console.log("New category created during update with ID:", categoryId);
     }
 
     // Find or Create Supplier
     if (!supplierId && data.newSupplierName) {
+      console.log("Creating new supplier during update:", data.newSupplierName);
       const [newSup] = await db.insert(suppliers).values({
         tenantId,
-        name: data.newSupplierName,
+        name: capitalize(data.newSupplierName),
       }).returning();
       supplierId = newSup.id;
+      console.log("New supplier created during update with ID:", supplierId);
     }
 
     await db.update(products)
       .set({
-        name: data.name,
+        name: capitalize(data.name),
         description: data.description,
         sku: data.sku,
         barcode: data.barcode,

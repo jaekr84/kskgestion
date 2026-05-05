@@ -42,3 +42,8 @@ export function formatDateTime(date: Date | string | number) {
   if (!date) return "-";
   return `${formatDate(date)} ${formatTime(date)}`;
 }
+
+export function capitalize(text: string) {
+  if (!text) return "";
+  return text.trim().toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
