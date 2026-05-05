@@ -144,7 +144,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar              {/* 01. General Info Section */}
+            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-slate-950 text-white flex items-center justify-center font-bold text-xs shadow-lg">01</div>
