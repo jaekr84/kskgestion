@@ -178,6 +178,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                         required
                         className="pl-12 h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl text-lg font-medium focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                       />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
