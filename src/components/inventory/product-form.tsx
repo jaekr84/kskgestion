@@ -115,7 +115,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
           )
         }
       />
-      <DialogContent className="max-w-4xl overflow-y-auto max-h-[95vh] p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-4xl overflow-y-auto max-h-[95vh] p-0 border-none shadow-2xl">
         <form onSubmit={handleSubmit} className="flex flex-col h-full bg-white dark:bg-slate-900">
           <div className="p-8 space-y-8">
             <DialogHeader>
