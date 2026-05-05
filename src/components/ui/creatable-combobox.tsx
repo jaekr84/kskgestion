@@ -53,30 +53,28 @@ export function CreatableCombobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              "w-full justify-between h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm font-normal",
-              className
-            )}
-          >
-            <div className="flex items-center gap-3 truncate">
-              {icon}
-              <span className={cn("truncate", !selectedOption && "text-slate-400")}>
-                {selectedOption ? selectedOption.name : placeholder}
-              </span>
-            </div>
-            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
-        }
-      />
-      <PopoverContent 
-        className="w-(--anchor-width) p-0 rounded-2xl shadow-2xl border-slate-100 animate-in fade-in zoom-in-95 duration-200" 
-        align="start" 
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            "w-full justify-between h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm font-normal",
+            className
+          )}
+        >
+          <div className="flex items-center gap-3 truncate">
+            {icon}
+            <span className={cn("truncate", !selectedOption && "text-slate-400")}>
+              {selectedOption ? selectedOption.name : placeholder}
+            </span>
+          </div>
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] p-0 rounded-2xl shadow-2xl border-slate-100 overflow-hidden"
+        align="start"
         sideOffset={8}
       >
         <Command>
