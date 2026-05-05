@@ -386,25 +386,33 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                       <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
                         <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales
                       </Label>
-                      <div className="overflow-x-auto pb-4 custom-scrollbar">
-                        <div className="inline-flex gap-3 min-w-full">
-                          {branches.map((branch) => (
-                            <div key={branch.id} className="flex-1 min-w-[120px] p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm space-y-3">
-                              <div className="text-center">
-                                <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400 truncate block">
+                      <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <table className="w-full border-collapse bg-white dark:bg-slate-900/50">
+                          <thead>
+                            <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+                              {branches.map((branch) => (
+                                <th key={branch.id} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center min-w-[140px]">
                                   {branch.name}
-                                </span>
-                              </div>
-                              <Input
-                                type="number"
-                                value={initialStock[branch.id]}
-                                onChange={(e) => setInitialStock({ ...initialStock, [branch.id]: parseInt(e.target.value) || 0 })}
-                                className="h-10 text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
-                                min="0"
-                              />
-                            </div>
-                          ))}
-                        </div>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              {branches.map((branch) => (
+                                <td key={branch.id} className="p-2 border-r last:border-r-0 border-slate-50 dark:border-slate-800/50">
+                                  <Input
+                                    type="number"
+                                    value={initialStock[branch.id]}
+                                    onChange={(e) => setInitialStock({ ...initialStock, [branch.id]: parseInt(e.target.value) || 0 })}
+                                    className="h-12 text-center bg-transparent border-none rounded-lg text-sm font-bold focus:bg-white dark:focus:bg-slate-800 transition-all focus:ring-0"
+                                    min="0"
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )}
