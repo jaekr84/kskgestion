@@ -366,7 +366,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                   <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-8">
                   <div className="space-y-4">
                     <Label htmlFor="minStock" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
                       <AlertCircle className="w-3 h-3 text-amber-500" /> Nivel Crítico de Stock
@@ -376,7 +376,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                       type="number"
                       value={formData.minStock}
                       onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
-                      className="h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm"
+                      className="h-14 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm max-w-xs"
                       placeholder="0"
                     />
                   </div>
@@ -384,7 +384,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                   {!product && branches.length > 0 && (
                     <div className="space-y-4">
                       <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
-                        <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales
+                        <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales por Sucursal
                       </Label>
                       <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
                         <table className="w-full border-collapse bg-white dark:bg-slate-900/50">
