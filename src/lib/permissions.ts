@@ -2,6 +2,7 @@ export type ModuleKey =
   | "dashboard" 
   | "pos" 
   | "compras" 
+  | "recepciones"
   | "inventario" 
   | "configuracion" 
   | "usuarios";

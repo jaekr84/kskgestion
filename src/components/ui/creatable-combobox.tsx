@@ -31,6 +31,7 @@ interface CreatableComboboxProps {
   emptyMessage?: string
   className?: string
   icon?: React.ReactNode
+  newName?: string
 }
 
 export function CreatableCombobox({
@@ -41,6 +42,7 @@ export function CreatableCombobox({
   emptyMessage = "No se encontraron resultados.",
   className,
   icon,
+  newName,
 }: CreatableComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
@@ -65,8 +67,8 @@ export function CreatableCombobox({
         >
           <div className="flex items-center gap-3 truncate">
             {icon}
-            <span className={cn("truncate", !selectedOption && "text-slate-400")}>
-              {selectedOption ? selectedOption.name : placeholder}
+            <span className={cn("truncate", !selectedOption && !newName && "text-slate-400")}>
+              {selectedOption ? selectedOption.name : (newName || placeholder)}
             </span>
           </div>
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />

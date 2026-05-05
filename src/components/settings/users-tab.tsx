@@ -30,7 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Shield, MapPin } from "lucide-react";
 import { createUserAction, updateUserAction, deleteUserAction } from "@/lib/actions/users";
-import { toast } from "sonner"; // Assuming sonner is used or I'll use a simple alert for now
+
 
 export function UsersTab({ 
   users, 
@@ -100,14 +100,12 @@ export function UsersTab({
           <p className="text-sm text-slate-500 dark:text-slate-400">Gestiona quién tiene acceso y sus permisos por sucursal.</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if(!val) resetForm(); }}>
-          <DialogTrigger
-            render={
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-300 gap-2">
-                <Plus className="w-4 h-4" />
-                Nuevo Usuario
-              </Button>
-            }
-          />
+          <DialogTrigger asChild>
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-300 gap-2">
+              <Plus className="w-4 h-4" />
+              Nuevo Usuario
+            </Button>
+          </DialogTrigger>
           <DialogContent className="sm:max-w-[500px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-slate-200 dark:border-slate-800">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center gap-2">

@@ -196,3 +196,108 @@ export const inventoryRelations = relations(inventory, ({ one }) => ({
     references: [products.id],
   }),
 }));
+
+// Purchases: Purchase orders from suppliers
+export const purchases = pgTable("purchases", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  supplierId: integer("supplier_id").references(() => suppliers.id),
+  branchId: integer("branch_id").references(() => branches.id),
+  invoiceNumber: text("invoice_number"),       // Nro. de factura del proveedor
+  status: text("status").notNull().default("pendiente"), // pendiente, recibida, cancelada
+  subtotal: decimal("subtotal", { precision: 12, scale: 2 }).default("0"),
+  iva: decimal("iva", { precision: 12, scale: 2 }).default("0"),
+  total: decimal("total", { precision: 12, scale: 2 }).notNull().default("0"),
+  notes: text("notes"),
+  purchaseDate: timestamp("purchase_date").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Purchase Items: Line items within a purchase
+export const purchaseItems = pgTable("purchase_items", {
+  id: serial("id").primaryKey(),
+  purchaseId: integer("purchase_id").references(() => purchases.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  unitCost: decimal("unit_cost", { precision: 10, scale: 2 }).notNull(),
+  subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
+});
+
+// Purchase Relations
+export const purchasesRelations = relations(purchases, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [purchases.tenantId],
+    references: [tenants.id],
+  }),
+  supplier: one(suppliers, {
+    fields: [purchases.supplierId],
+    references: [suppliers.id],
+  }),
+  branch: one(branches, {
+    fields: [purchases.branchId],
+    references: [branches.id],
+  }),
+  items: many(purchaseItems),
+  receptions: many(stockReceptions),
+}));
+
+export const purchaseItemsRelations = relations(purchaseItems, ({ one }) => ({
+  purchase: one(purchases, {
+    fields: [purchaseItems.purchaseId],
+    references: [purchases.id],
+  }),
+  product: one(products, {
+    fields: [purchaseItems.productId],
+    references: [products.id],
+  }),
+}));
+
+// Stock Receptions: Per-branch verification of received goods
+export const stockReceptions = pgTable("stock_receptions", {
+  id: serial("id").primaryKey(),
+  purchaseId: integer("purchase_id").references(() => purchases.id).notNull(),
+  branchId: integer("branch_id").references(() => branches.id).notNull(),
+  status: text("status").notNull().default("pendiente"), // pendiente, recibida, recibida_parcial, rechazada
+  receivedByUserId: integer("received_by_user_id").references(() => users.id),
+  notes: text("notes"),
+  receivedAt: timestamp("received_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Stock Reception Items: Line items for each reception
+export const stockReceptionItems = pgTable("stock_reception_items", {
+  id: serial("id").primaryKey(),
+  receptionId: integer("reception_id").references(() => stockReceptions.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  expectedQuantity: integer("expected_quantity").notNull(),
+  receivedQuantity: integer("received_quantity"),   // null = not yet confirmed
+  notes: text("notes"),                              // discrepancy notes
+});
+
+// Stock Reception Relations
+export const stockReceptionsRelations = relations(stockReceptions, ({ one, many }) => ({
+  purchase: one(purchases, {
+    fields: [stockReceptions.purchaseId],
+    references: [purchases.id],
+  }),
+  branch: one(branches, {
+    fields: [stockReceptions.branchId],
+    references: [branches.id],
+  }),
+  receivedByUser: one(users, {
+    fields: [stockReceptions.receivedByUserId],
+    references: [users.id],
+  }),
+  items: many(stockReceptionItems),
+}));
+
+export const stockReceptionItemsRelations = relations(stockReceptionItems, ({ one }) => ({
+  reception: one(stockReceptions, {
+    fields: [stockReceptionItems.receptionId],
+    references: [stockReceptions.id],
+  }),
+  product: one(products, {
+    fields: [stockReceptionItems.productId],
+    references: [products.id],
+  }),
+}));

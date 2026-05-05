@@ -42,14 +42,14 @@ export async function registerAction(formData: FormData) {
       tenantId: newTenant.id,
       name: "Administrador",
       description: "Acceso total al sistema",
-      permissions: JSON.stringify(["dashboard", "pos", "compras", "inventario", "configuracion", "usuarios"]),
+      permissions: JSON.stringify(["dashboard", "pos", "compras", "recepciones", "inventario", "configuracion", "usuarios"]),
     }).returning();
 
     await db.insert(roles).values({
       tenantId: newTenant.id,
       name: "Vendedor",
       description: "Acceso limitado a ventas y caja",
-      permissions: JSON.stringify(["pos", "inventario"]),
+      permissions: JSON.stringify(["pos", "recepciones", "inventario"]),
     });
 
     // 4. Create Admin User

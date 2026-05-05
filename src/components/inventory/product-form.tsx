@@ -43,29 +43,52 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
     product ? {} : branches.reduce((acc, b) => ({ ...acc, [b.id]: 0 }), {})
   );
 
-  // Auto-calculate price based on cost and markup
-  useEffect(() => {
-    if (formData.cost && formData.markup && formData.iva) {
-      const cost = parseFloat(formData.cost);
-      const markup = parseFloat(formData.markup);
-      const iva = parseFloat(formData.iva);
+  // Helper to calculate price from cost and markup
+  const calculatePrice = (cost: string, markup: string, iva: string, includesIva: boolean) => {
+    const c = parseFloat(cost);
+    const m = parseFloat(markup);
+    const i = parseFloat(iva);
+    if (isNaN(c) || isNaN(m) || isNaN(i)) return "";
+    let basePrice = c * (1 + m / 100);
+    let finalPrice = includesIva ? basePrice * (1 + i / 100) : basePrice;
+    return finalPrice.toFixed(2);
+  };
 
-      if (isNaN(cost) || isNaN(markup) || isNaN(iva)) return;
+  // Helper to calculate markup from cost and price
+  const calculateMarkup = (cost: string, price: string, iva: string, includesIva: boolean) => {
+    const c = parseFloat(cost);
+    const p = parseFloat(price);
+    const i = parseFloat(iva);
+    if (isNaN(c) || isNaN(p) || isNaN(i) || c === 0) return "0";
+    let basePrice = includesIva ? p / (1 + i / 100) : p;
+    let m = (basePrice / c - 1) * 100;
+    return Math.round(m).toString();
+  };
 
-      // Net price (before markup)
-      let basePrice = cost * (1 + markup / 100);
+  const handleCostChange = (val: string) => {
+    const newPrice = calculatePrice(val, formData.markup, formData.iva, formData.priceIncludesIva);
+    setFormData(prev => ({ ...prev, cost: val, price: newPrice }));
+  };
 
-      // Final price including or excluding IVA
-      let finalPrice;
-      if (formData.priceIncludesIva) {
-        finalPrice = basePrice * (1 + iva / 100);
-      } else {
-        finalPrice = basePrice;
-      }
+  const handleMarkupChange = (val: string) => {
+    const newPrice = calculatePrice(formData.cost, val, formData.iva, formData.priceIncludesIva);
+    setFormData(prev => ({ ...prev, markup: val, price: newPrice }));
+  };
 
-      setFormData(prev => ({ ...prev, price: finalPrice.toFixed(2) }));
-    }
-  }, [formData.cost, formData.markup, formData.iva, formData.priceIncludesIva]);
+  const handlePriceChange = (val: string) => {
+    const newMarkup = calculateMarkup(formData.cost, val, formData.iva, formData.priceIncludesIva);
+    setFormData(prev => ({ ...prev, price: val, markup: newMarkup }));
+  };
+
+  const handleIvaChange = (val: string) => {
+    const newPrice = calculatePrice(formData.cost, formData.markup, val, formData.priceIncludesIva);
+    setFormData(prev => ({ ...prev, iva: val, price: newPrice }));
+  };
+
+  const handleIvaToggle = (checked: boolean) => {
+    const newPrice = calculatePrice(formData.cost, formData.markup, formData.iva, checked);
+    setFormData(prev => ({ ...prev, priceIncludesIva: checked, price: newPrice }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +108,8 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
         branchId: parseInt(branchId),
         stock,
       })),
+      newCategoryName: formData.newCategoryName,
+      newSupplierName: formData.newSupplierName,
     };
 
     let result;
@@ -96,6 +121,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
     setIsLoading(false);
     if (result.success) {
+      alert(product ? "Producto actualizado correctamente" : "Producto creado correctamente");
       setOpen(false);
       if (!product) setFormData({
         name: "", description: "", sku: "", externalSku: "", barcode: "", price: "", cost: "",
@@ -103,6 +129,8 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
         categoryId: "", supplierId: "", newCategoryName: "", newSupplierName: ""
       });
       onSuccess?.();
+    } else {
+      alert(result.error || "Ocurrió un error inesperado");
     }
   };
 
@@ -117,17 +145,15 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          product ? (
-            <Button variant="ghost" size="sm">Editar</Button>
-          ) : (
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-200 dark:shadow-none">
-              <Plus className="w-4 h-4" /> Nuevo Artículo
-            </Button>
-          )
-        }
-      />
+      <DialogTrigger asChild>
+        {product ? (
+          <Button variant="ghost" size="sm">Editar</Button>
+        ) : (
+          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-200 dark:shadow-none">
+            <Plus className="w-4 h-4" /> Nuevo Artículo
+          </Button>
+        )}
+      </DialogTrigger>
       <DialogContent className="sm:max-w-2xl overflow-hidden p-0 border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-transparent">
         <form onSubmit={handleSubmit} className="flex flex-col h-full bg-white dark:bg-slate-900 overflow-hidden rounded-3xl ring-1 ring-slate-200 dark:ring-slate-800">
           {/* Decorative Background Elements */}
@@ -161,13 +187,13 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-slate-950 text-white flex items-center justify-center font-bold text-xs shadow-lg">01</div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Información General</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Información General</h4>
                   <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
                 </div>
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Nombre del Producto</Label>
+                    <Label htmlFor="name" className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">Nombre del Producto</Label>
                     <div className="relative group">
                       <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
                       <Input
@@ -183,10 +209,11 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Proveedor</Label>
+                      <Label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">Proveedor</Label>
                       <CreatableCombobox
                         options={suppliers}
                         value={formData.supplierId}
+                        newName={formData.newSupplierName}
                         onSelect={(id, name) => {
                           setFormData(prev => ({
                             ...prev,
@@ -200,10 +227,11 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Categoría</Label>
+                      <Label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">Categoría</Label>
                       <CreatableCombobox
                         options={categories}
                         value={formData.categoryId}
+                        newName={formData.newCategoryName}
                         onSelect={(id, name) => {
                           setFormData(prev => ({
                             ...prev,
@@ -229,7 +257,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="sku" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">SKU Interno</Label>
+                    <Label htmlFor="sku" className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">SKU Interno</Label>
                     <div className="relative group">
                       <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                       <Input
@@ -242,7 +270,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="externalSku" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">SKU Externo</Label>
+                    <Label htmlFor="externalSku" className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">SKU Externo</Label>
                     <div className="relative group">
                       <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                       <Input
@@ -255,7 +283,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="barcode" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">Código de Barras</Label>
+                    <Label htmlFor="barcode" className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">Código de Barras</Label>
                     <div className="relative group">
                       <Barcode className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                       <Input
@@ -282,15 +310,17 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
               </div>
 
               {/* 03. Financial Summary Card */}
-              <div className="relative p-8 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-1000 delay-500">
-                <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-indigo-500/10 blur-3xl rounded-full" />
-                <div className="relative z-10 space-y-8">
+              <div className="relative p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm animate-in fade-in zoom-in-95 duration-1000 delay-500">
+                <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-indigo-500/5 blur-3xl rounded-full" />
+                <div className="relative z-10 space-y-6">
                   <div className="flex items-center justify-between">
                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Estructura de Precios</h4>
-                    <DollarSign className="w-5 h-5 text-indigo-600/30 dark:text-indigo-400/50" />
+                    <div className="p-2 bg-white dark:bg-slate-950 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+                      <DollarSign className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="cost" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Costo</Label>
                       <div className="relative group">
@@ -300,7 +330,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                           type="number"
                           step="0.01"
                           value={formData.cost}
-                          onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
+                          onChange={(e) => handleCostChange(e.target.value)}
                           className="pl-8 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                         />
                       </div>
@@ -311,19 +341,26 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                         id="markup"
                         type="number"
                         value={formData.markup}
-                        onChange={(e) => setFormData({ ...formData, markup: e.target.value })}
+                        onChange={(e) => handleMarkupChange(e.target.value)}
                         className="h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="iva" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">IVA (%)</Label>
-                      <Input
-                        id="iva"
-                        type="number"
-                        value={formData.iva}
-                        onChange={(e) => setFormData({ ...formData, iva: e.target.value })}
-                        className="h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
-                      />
+                      <Select 
+                        value={formData.iva} 
+                        onValueChange={handleIvaChange}
+                      >
+                        <SelectTrigger id="iva" className="h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 shadow-sm">
+                          <SelectValue placeholder="21" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="21">21%</SelectItem>
+                          <SelectItem value="10.5">10.5%</SelectItem>
+                          <SelectItem value="27">27%</SelectItem>
+                          <SelectItem value="0">0%</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -331,7 +368,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                     <Checkbox
                       id="priceIncludesIva"
                       checked={formData.priceIncludesIva}
-                      onCheckedChange={(checked) => setFormData({ ...formData, priceIncludesIva: !!checked })}
+                      onCheckedChange={(checked) => handleIvaToggle(!!checked)}
                       className="border-slate-300 dark:border-slate-700 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
                     />
                     <label htmlFor="priceIncludesIva" className="text-[10px] font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">
@@ -339,23 +376,23 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                     </label>
                   </div>
 
-                  <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="space-y-2 flex-1">
+                  <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div className="space-y-1.5 flex-1">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 ml-1">Precio de Venta Sugerido</Label>
-                      <div className="relative group">
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-4xl font-light text-slate-300 tracking-tighter">$</span>
+                      <div className="relative group max-w-[300px]">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-slate-400">$</span>
                         <Input
                           id="price"
                           type="number"
                           step="0.01"
                           value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="pl-8 h-20 text-6xl font-black text-slate-900 dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none transition-all tracking-tighter"
+                          onChange={(e) => handlePriceChange(e.target.value)}
+                          className="pl-10 h-14 text-2xl font-black text-slate-900 dark:text-white bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                         />
                       </div>
                     </div>
-                    <div className="pb-4">
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">Cálculo en Tiempo Real</span>
+                    <div className="pb-2">
+                      <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 uppercase tracking-wider">Cálculo en Tiempo Real</span>
                     </div>
                   </div>
                 </div>
@@ -365,13 +402,13 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-slate-950 text-white flex items-center justify-center font-bold text-xs shadow-lg">03</div>
-                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Stock y Alertas</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Stock y Alertas</h4>
                   <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
                 </div>
 
                 <div className="space-y-8">
                   <div className="space-y-4">
-                    <Label htmlFor="minStock" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
+                    <Label htmlFor="minStock" className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2 ml-1">
                       <AlertCircle className="w-3 h-3 text-amber-500" /> Nivel Crítico de Stock
                     </Label>
                     <Input
@@ -386,7 +423,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
                   {!product && branches.length > 0 && (
                     <div className="space-y-4">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
+                      <Label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2 ml-1">
                         <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales por Sucursal
                       </Label>
                       <div className="rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">

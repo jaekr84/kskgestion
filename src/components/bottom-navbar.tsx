@@ -8,16 +8,13 @@ import {
   Package,
   Settings,
   CreditCard,
-  User2,
+  ClipboardCheck,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/logout";
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 import { hasPermission, ModuleKey } from "@/lib/permissions";
@@ -42,6 +39,12 @@ const navItems: { title: string; url: string; icon: any; module: ModuleKey }[] =
     module: "compras",
   },
   {
+    title: "Recepciones",
+    url: "/recepciones",
+    icon: ClipboardCheck,
+    module: "recepciones",
+  },
+  {
     title: "Inventario",
     url: "/inventario",
     icon: Package,
@@ -55,12 +58,12 @@ const navItems: { title: string; url: string; icon: any; module: ModuleKey }[] =
   },
 ];
 
-export function BottomNavbar({ permissionsJson }: { permissionsJson?: string }) {
+export function BottomNavbar({ permissionsJson, pendingReceptions = 0 }: { permissionsJson?: string; pendingReceptions?: number }) {
   const pathname = usePathname();
 
-  // If no permissions provided (e.g., during transition), show all for dev
+  // Recepciones is accessible to all roles, so we don't filter it out
   const filteredItems = permissionsJson 
-    ? navItems.filter(item => hasPermission(permissionsJson, item.module))
+    ? navItems.filter(item => item.module === "recepciones" || hasPermission(permissionsJson, item.module))
     : navItems;
 
   return (
@@ -69,22 +72,28 @@ export function BottomNavbar({ permissionsJson }: { permissionsJson?: string }) 
         <div className="max-w-7xl mx-auto flex items-center justify-around md:justify-center md:gap-8 px-4 h-20">
           {filteredItems.map((item) => {
             const isActive = pathname === item.url;
+            const showBadge = item.url === "/recepciones" && pendingReceptions > 0;
             return (
               <Link
                 key={item.url}
                 href={item.url}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-xl transition-all duration-300 group min-w-[70px]",
+                  "relative flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-xl transition-all duration-300 group min-w-[70px]",
                   isActive 
                     ? "text-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30" 
                     : "text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 )}
               >
                 <div className={cn(
-                  "transition-transform duration-300",
+                  "relative transition-transform duration-300",
                   isActive && "scale-110 -translate-y-0.5"
                 )}>
                   <item.icon size={isActive ? 26 : 24} strokeWidth={isActive ? 2.5 : 2} />
+                  {showBadge && (
+                    <span className="absolute -top-1.5 -right-2.5 flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[9px] font-black shadow-lg shadow-amber-200 dark:shadow-none animate-in zoom-in-50 duration-300 ring-2 ring-white dark:ring-slate-900">
+                      {pendingReceptions > 9 ? "9+" : pendingReceptions}
+                    </span>
+                  )}
                 </div>
                 <span className={cn(
                   "text-[10px] font-bold uppercase tracking-wider",

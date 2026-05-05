@@ -1,6 +1,9 @@
 import { BottomNavbar } from "@/components/bottom-navbar";
+import { getPendingReceptionCountAction } from "@/lib/actions/receptions";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const { total: pendingReceptions } = await getPendingReceptionCountAction();
+
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950">
       <main className="flex-1 flex flex-col pb-40">
@@ -23,7 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </p>
       </footer>
 
-      <BottomNavbar />
+      <BottomNavbar pendingReceptions={pendingReceptions} />
     </div>
   );
 }
