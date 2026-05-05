@@ -386,19 +386,25 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                       <Label className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 flex items-center gap-2 ml-1">
                         <Boxes className="w-3 h-3 text-indigo-600" /> Existencias Iniciales
                       </Label>
-                      <div className="grid grid-cols-1 gap-2 max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
-                        {branches.map((branch) => (
-                          <div key={branch.id} className="flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">{branch.name}</span>
-                            <Input
-                              type="number"
-                              value={initialStock[branch.id]}
-                              onChange={(e) => setInitialStock({ ...initialStock, [branch.id]: parseInt(e.target.value) || 0 })}
-                              className="w-16 h-8 text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-xs font-bold"
-                              min="0"
-                            />
-                          </div>
-                        ))}
+                      <div className="overflow-x-auto pb-4 custom-scrollbar">
+                        <div className="inline-flex gap-3 min-w-full">
+                          {branches.map((branch) => (
+                            <div key={branch.id} className="flex-1 min-w-[120px] p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm space-y-3">
+                              <div className="text-center">
+                                <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400 truncate block">
+                                  {branch.name}
+                                </span>
+                              </div>
+                              <Input
+                                type="number"
+                                value={initialStock[branch.id]}
+                                onChange={(e) => setInitialStock({ ...initialStock, [branch.id]: parseInt(e.target.value) || 0 })}
+                                className="h-10 text-center bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm font-bold focus:ring-2 focus:ring-indigo-500/20"
+                                min="0"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
