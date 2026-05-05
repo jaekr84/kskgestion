@@ -1,10 +1,11 @@
 "use server";
 
 import { db } from "@/db";
-import { stockReceptions, stockReceptionItems, inventory, purchases } from "@/db/schema";
+import { stockReceptions, stockReceptionItems, purchases } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getTenantId } from "./tenants";
+import { updateStock } from "./inventory";
 
 export async function getReceptionsAction() {
   const tenantId = await getTenantId();
@@ -85,7 +86,7 @@ export async function confirmReceptionAction(data: {
     }
 
     // Update each item's received quantity
-    let hasDiscrepancy = false;
+    let hasDeficit = false;
     let allZero = true;
 
     for (const item of data.items) {
@@ -99,8 +100,8 @@ export async function confirmReceptionAction(data: {
         })
         .where(eq(stockReceptionItems.id, item.itemId));
 
-      if (item.receivedQuantity !== expectedItem.expectedQuantity) {
-        hasDiscrepancy = true;
+      if (item.receivedQuantity < expectedItem.expectedQuantity) {
+        hasDeficit = true;
       }
       if (item.receivedQuantity > 0) {
         allZero = false;
@@ -108,7 +109,7 @@ export async function confirmReceptionAction(data: {
 
       // Update stock for received quantity
       if (item.receivedQuantity > 0) {
-        await upsertStock(reception.branchId, expectedItem.productId, item.receivedQuantity);
+        await updateStock(reception.branchId, expectedItem.productId, item.receivedQuantity);
       }
     }
 
@@ -116,7 +117,7 @@ export async function confirmReceptionAction(data: {
     let receptionStatus: string;
     if (allZero) {
       receptionStatus = "rechazada";
-    } else if (hasDiscrepancy) {
+    } else if (hasDeficit) {
       receptionStatus = "recibida_parcial";
     } else {
       receptionStatus = "recibida";
@@ -161,19 +162,4 @@ export async function confirmReceptionAction(data: {
   }
 }
 
-async function upsertStock(branchId: number, productId: number, quantity: number) {
-  const [existing] = await db.select().from(inventory).where(
-    and(
-      eq(inventory.branchId, branchId),
-      eq(inventory.productId, productId)
-    )
-  );
 
-  if (existing) {
-    await db.update(inventory)
-      .set({ stock: existing.stock + quantity, updatedAt: new Date() })
-      .where(eq(inventory.id, existing.id));
-  } else {
-    await db.insert(inventory).values({ branchId, productId, stock: quantity });
-  }
-}

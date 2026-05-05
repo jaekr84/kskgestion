@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { Plus, ShoppingCart, ChevronRight, Truck, MapPin, FileText, Trash2, Pack
 import { CreatableCombobox } from "@/components/ui/creatable-combobox";
 import { createPurchaseAction } from "@/lib/actions/purchases";
 import { formatCurrency } from "@/lib/utils";
+import { ProductForm } from "@/components/inventory/product-form";
 
 interface PurchaseItem {
   productId: number;
@@ -19,12 +21,14 @@ interface PurchaseItem {
   distribution: Record<number, number>; // { branchId: qty }
 }
 
-export function PurchaseForm({ branches, products, suppliers, onSuccess }: {
+export function PurchaseForm({ branches, products, suppliers, categories = [], onSuccess }: {
   branches: any[];
   products: any[];
   suppliers: any[];
+  categories?: any[];
   onSuccess?: () => void;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -319,13 +323,23 @@ export function PurchaseForm({ branches, products, suppliers, onSuccess }: {
                 </div>
 
                 {/* Product search */}
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    value={searchProduct}
-                    onChange={(e) => setSearchProduct(e.target.value)}
-                    placeholder="Buscar producto por nombre, SKU o código..."
-                    className="pl-11 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm"
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      value={searchProduct}
+                      onChange={(e) => setSearchProduct(e.target.value)}
+                      placeholder="Buscar producto por nombre, SKU o código..."
+                      className="pl-11 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm"
+                    />
+                  </div>
+                  <ProductForm 
+                    branches={branches} 
+                    categories={categories} 
+                    suppliers={suppliers}
+                    onSuccess={() => {
+                      router.refresh();
+                    }}
                   />
                 </div>
 

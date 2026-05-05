@@ -4,12 +4,16 @@ import { GeneralTab } from "@/components/settings/general-tab";
 import { BranchesTab } from "@/components/settings/branches-tab";
 import { getTenantData } from "@/lib/actions/users";
 import { getTenant } from "@/lib/actions/tenants";
-import { Users, Building2, ShieldCheck, Settings2 } from "lucide-react";
+import { getPaymentMethodsAction, getTerminalsAction } from "@/lib/actions/payments";
+import { Users, Building2, ShieldCheck, Settings2, CreditCard } from "lucide-react";
+import { PaymentsTab } from "@/components/settings/payments-tab";
 
 export default async function SettingsPage() {
-  const [{ users, roles, branches }, tenant] = await Promise.all([
+  const [{ users, roles, branches }, tenant, paymentMethods, terminals] = await Promise.all([
     getTenantData(),
     getTenant(),
+    getPaymentMethodsAction(),
+    getTerminalsAction(),
   ]);
 
   return (
@@ -52,7 +56,14 @@ export default async function SettingsPage() {
               className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-xl px-6 py-2.5 transition-all duration-300 gap-2"
             >
               <ShieldCheck className="w-4 h-4" />
-              Roles y Permisos
+              Roles
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payments" 
+              className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-xl px-6 py-2.5 transition-all duration-300 gap-2"
+            >
+              <CreditCard className="w-4 h-4" />
+              Pagos
             </TabsTrigger>
           </TabsList>
         </div>
@@ -74,6 +85,14 @@ export default async function SettingsPage() {
             <h3 className="text-xl font-bold mb-4">Roles y Permisos</h3>
             <p className="text-slate-500">Próximamente: Personaliza qué módulos puede ver cada rol.</p>
           </div>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <PaymentsTab 
+            paymentMethods={paymentMethods} 
+            terminals={terminals} 
+            branches={branches} 
+          />
         </TabsContent>
       </Tabs>
     </div>

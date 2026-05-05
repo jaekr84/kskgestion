@@ -10,6 +10,9 @@ export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
+  console.log("Intentando login para:", email);
+
+  let success = false;
   try {
     // 1. Find user
     const user = await db.query.users.findFirst({
@@ -17,10 +20,11 @@ export async function loginAction(formData: FormData) {
     });
 
     if (!user) {
-      // For demo purposes, if user doesn't exist, we'll just redirect to register or show error
-      // But let's assume they exist if they just registered
+      console.log("Usuario no encontrado:", email);
       return { error: "Usuario no encontrado" };
     }
+
+    console.log("Usuario encontrado, seteando cookies...");
 
     // 2. Set Session Cookie
     const cookieStore = await cookies();
@@ -30,11 +34,22 @@ export async function loginAction(formData: FormData) {
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
+    cookieStore.set("user_id", user.id.toString(), {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+    });
 
+    console.log("Cookies seteadas correctamente");
+    success = true;
   } catch (error) {
     console.error("Login error:", error);
     return { error: "Error al iniciar sesión" };
   }
   
-  redirect("/dashboard");
+  if (success) {
+    console.log("Redirigiendo a /dashboard...");
+    redirect("/dashboard");
+  }
 }

@@ -34,7 +34,6 @@ export function ReceptionConfirmForm({
   const isPending = reception.status === "pendiente";
   const [isLoading, setIsLoading] = useState(false);
   const [scanInput, setScanInput] = useState("");
-  const [manualMode, setManualMode] = useState(false);
   const scanRef = useRef<HTMLInputElement>(null);
 
   const [items, setItems] = useState<ReceptionItemState[]>(
@@ -55,10 +54,10 @@ export function ReceptionConfirmForm({
 
   // Auto-focus scan input when modal opens
   useEffect(() => {
-    if (open && isPending && !manualMode) {
+    if (open && isPending) {
       setTimeout(() => scanRef.current?.focus(), 300);
     }
-  }, [open, isPending, manualMode]);
+  }, [open, isPending]);
 
 
 
@@ -199,7 +198,7 @@ export function ReceptionConfirmForm({
             </div>
 
             {/* Scanner input */}
-            {isPending && !manualMode && (
+            {isPending && (
               <div className="px-8 pt-5 pb-3 space-y-3 border-b border-slate-100 dark:border-slate-800 bg-emerald-50/30 dark:bg-emerald-900/10">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
@@ -214,31 +213,7 @@ export function ReceptionConfirmForm({
                       autoComplete="off"
                     />
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setManualMode(true)}
-                    className="h-14 px-4 rounded-2xl border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-wider shrink-0"
-                  >
-                    Manual
-                  </Button>
                 </div>
-
-
-              </div>
-            )}
-
-            {/* Manual mode toggle */}
-            {isPending && manualMode && (
-              <div className="px-8 pt-4 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => { setManualMode(false); setTimeout(() => scanRef.current?.focus(), 100); }}
-                  className="gap-2 text-xs font-bold uppercase tracking-wider rounded-xl"
-                >
-                  <ScanBarcode className="w-4 h-4" /> Volver a modo escáner
-                </Button>
               </div>
             )}
 
@@ -290,7 +265,7 @@ export function ReceptionConfirmForm({
                             </span>
                           </td>
                           <td className="px-2 py-2 text-center">
-                            {isPending && manualMode ? (
+                            {isPending ? (
                               <Input
                                 type="number"
                                 min="0"
@@ -302,14 +277,6 @@ export function ReceptionConfirmForm({
                                   "bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-700"
                                 }`}
                               />
-                            ) : isPending ? (
-                              <span className={`inline-flex items-center justify-center min-w-[48px] px-3 py-1.5 rounded-lg text-sm font-black transition-all duration-500 ${
-                                isComplete ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 ring-2 ring-emerald-300 dark:ring-emerald-700" :
-                                item.receivedQuantity > 0 ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400" :
-                                "bg-slate-100 text-slate-400 dark:bg-slate-800"
-                              }`}>
-                                {item.receivedQuantity}
-                              </span>
                             ) : (
                               <span className={`font-bold px-3 py-1 rounded-lg text-xs ${
                                 isDiff ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
@@ -319,24 +286,18 @@ export function ReceptionConfirmForm({
                               </span>
                             )}
                           </td>
-                            <td className="px-2 py-2">
-                              {isPending && manualMode ? (
-                                <Input
-                                  value={item.notes}
-                                  onChange={(e) => updateItem(idx, "notes", e.target.value)}
-                                  placeholder={isDiff ? "Motivo..." : ""}
-                                  className="h-9 text-xs bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-700 rounded-lg"
-                                />
-                              ) : isDiff ? (
-                                <span className={`text-xs font-medium ${item.receivedQuantity > item.expectedQuantity ? "text-indigo-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-400"}`}>
-                                  {item.notes || (item.receivedQuantity > item.expectedQuantity
-                                    ? `Sobraron ${item.receivedQuantity - item.expectedQuantity}`
-                                    : `Faltaron ${item.expectedQuantity - item.receivedQuantity}`)}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-slate-400">{item.notes || "—"}</span>
-                              )}
-                            </td>
+                          <td className="px-2 py-2">
+                            {isPending ? (
+                              <Input
+                                value={item.notes}
+                                onChange={(e) => updateItem(idx, "notes", e.target.value)}
+                                placeholder={isDiff ? "Motivo..." : ""}
+                                className="h-9 text-xs bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-700 rounded-lg"
+                              />
+                            ) : (
+                              <span className="text-xs text-slate-400">{item.notes || "—"}</span>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}

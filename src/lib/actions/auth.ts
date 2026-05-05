@@ -74,6 +74,12 @@ export async function registerAction(formData: FormData) {
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7, // 1 week
     });
+    cookieStore.set("user_id", newUser.id.toString(), {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+    });
 
   } catch (error) {
     console.error("Error during registration:", error);
@@ -82,3 +88,11 @@ export async function registerAction(formData: FormData) {
 
   redirect("/dashboard"); // Redirect directly to dashboard since they are now "logged in"
 }
+
+export async function getUserId(): Promise<number> {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_id")?.value;
+  if (!userId) throw new Error("No user session found");
+  return parseInt(userId);
+}
+

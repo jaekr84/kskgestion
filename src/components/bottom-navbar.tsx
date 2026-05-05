@@ -10,6 +10,7 @@ import {
   CreditCard,
   ClipboardCheck,
   LogOut,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/logout";
@@ -30,6 +31,12 @@ const navItems: { title: string; url: string; icon: any; module: ModuleKey }[] =
     title: "POS",
     url: "/pos",
     icon: ShoppingCart,
+    module: "pos",
+  },
+  {
+    title: "Ventas",
+    url: "/ventas",
+    icon: Receipt,
     module: "pos",
   },
   {

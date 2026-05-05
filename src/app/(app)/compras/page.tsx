@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { branches, products, purchases, suppliers } from "@/db/schema";
+import { branches, products, purchases, suppliers, productCategories } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getTenantId } from "@/lib/actions/tenants";
 import { PurchaseForm } from "@/components/purchases/purchase-form";
@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default async function ComprasPage() {
   const tenantId = await getTenantId();
 
-  const [allPurchases, allBranches, allProducts, allSuppliers] = await Promise.all([
+    const [allPurchases, allBranches, allProducts, allSuppliers, allCategories] = await Promise.all([
     db.query.purchases.findMany({
       where: eq(purchases.tenantId, tenantId),
       with: {
@@ -33,6 +33,9 @@ export default async function ComprasPage() {
     db.query.suppliers.findMany({
       where: eq(suppliers.tenantId, tenantId),
     }),
+    db.query.productCategories.findMany({
+      where: eq(productCategories.tenantId, tenantId),
+    }),
   ]);
 
   return (
@@ -47,7 +50,7 @@ export default async function ComprasPage() {
             Registra y controla las compras a proveedores.
           </p>
         </div>
-        <PurchaseForm branches={allBranches} products={allProducts} suppliers={allSuppliers} />
+        <PurchaseForm branches={allBranches} products={allProducts} suppliers={allSuppliers} categories={allCategories} />
       </div>
 
       <Card className="border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-sm overflow-hidden">

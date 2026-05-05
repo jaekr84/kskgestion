@@ -81,7 +81,7 @@ export function GeorefSelects({
           <SelectTrigger id="province" className="h-11 w-full text-base md:text-sm bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
             <SelectValue placeholder="Seleccionar provincia" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper" className="max-h-80">
             {provinces.map((p) => (
               <SelectItem key={p.id} value={p.nombre}>
                 {p.nombre}
@@ -101,7 +101,7 @@ export function GeorefSelects({
           <SelectTrigger id="locality" className="h-11 w-full text-base md:text-sm bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
             <SelectValue placeholder={selectedProvinceName ? "Seleccionar localidad" : "Primero elige provincia"} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper" className="max-h-80">
             {localities.map((l) => (
               <SelectItem key={l.id} value={l.nombre}>
                 {l.nombre}

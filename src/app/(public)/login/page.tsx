@@ -30,7 +30,7 @@ function LoginContent() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={async (formData: FormData) => { await loginAction(formData); }} className="space-y-4">
+        <form action={async (formData) => { await loginAction(formData); }} className="space-y-4">
           {isRegistered && (
             <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-lg flex items-center gap-3 mb-4 animate-in fade-in slide-in-from-top-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />

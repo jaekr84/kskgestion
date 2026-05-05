@@ -1,10 +1,11 @@
 "use server";
 
 import { db } from "@/db";
-import { purchases, purchaseItems, inventory, stockReceptions, stockReceptionItems } from "@/db/schema";
+import { purchases, purchaseItems, stockReceptions, stockReceptionItems } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getTenantId } from "./tenants";
+import { updateStock } from "./inventory";
 
 export async function createPurchaseAction(data: {
   supplierId?: number;
@@ -107,10 +108,10 @@ export async function createPurchaseAction(data: {
         if (item.distribution) {
           for (const [bId, qty] of Object.entries(item.distribution)) {
             if (qty <= 0) continue;
-            await upsertStock(parseInt(bId), item.productId, qty);
+            await updateStock(parseInt(bId), item.productId, qty);
           }
         } else if (data.branchId) {
-          await upsertStock(data.branchId, item.productId, item.quantity);
+          await updateStock(data.branchId, item.productId, item.quantity);
         }
       }
     }
@@ -125,23 +126,4 @@ export async function createPurchaseAction(data: {
   }
 }
 
-async function upsertStock(branchId: number, productId: number, quantity: number) {
-  const [existing] = await db.select().from(inventory).where(
-    and(
-      eq(inventory.branchId, branchId),
-      eq(inventory.productId, productId)
-    )
-  );
 
-  if (existing) {
-    await db.update(inventory)
-      .set({ stock: existing.stock + quantity, updatedAt: new Date() })
-      .where(eq(inventory.id, existing.id));
-  } else {
-    await db.insert(inventory).values({
-      branchId,
-      productId,
-      stock: quantity,
-    });
-  }
-}

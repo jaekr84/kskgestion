@@ -65,6 +65,26 @@ export const productCategories = pgTable("product_categories", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Payment Methods: Cash, Credit Card, etc.
+export const paymentMethods = pgTable("payment_methods", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  name: text("name").notNull(), // e.g., "Efectivo", "Tarjeta de Crédito"
+  type: text("type").notNull(), // e.g., "cash", "card", "transfer", "digital"
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Payment Terminals: Posnet, QR, etc.
+export const paymentTerminals = pgTable("payment_terminals", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  branchId: integer("branch_id").references(() => branches.id).notNull(),
+  name: text("name").notNull(), // e.g., "Posnet 1", "QR Mercado Pago"
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Suppliers
 export const suppliers = pgTable("suppliers", {
   id: serial("id").primaryKey(),
@@ -113,6 +133,8 @@ export const tenantsRelations = relations(tenants, ({ many }) => ({
   roles: many(roles),
   productCategories: many(productCategories),
   suppliers: many(suppliers),
+  paymentMethods: many(paymentMethods),
+  paymentTerminals: many(paymentTerminals),
 }));
 
 export const branchesRelations = relations(branches, ({ one, many }) => ({
@@ -160,6 +182,26 @@ export const productCategoriesRelations = relations(productCategories, ({ one, m
     references: [tenants.id],
   }),
   products: many(products),
+}));
+
+export const paymentMethodsRelations = relations(paymentMethods, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [paymentMethods.tenantId],
+    references: [tenants.id],
+  }),
+  sales: many(sales),
+}));
+
+export const paymentTerminalsRelations = relations(paymentTerminals, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [paymentTerminals.tenantId],
+    references: [tenants.id],
+  }),
+  branch: one(branches, {
+    fields: [paymentTerminals.branchId],
+    references: [branches.id],
+  }),
+  sales: many(sales),
 }));
 
 export const suppliersRelations = relations(suppliers, ({ one, many }) => ({
@@ -298,6 +340,106 @@ export const stockReceptionItemsRelations = relations(stockReceptionItems, ({ on
   }),
   product: one(products, {
     fields: [stockReceptionItems.productId],
+    references: [products.id],
+  }),
+}));
+
+// Shifts: Cash drawer management
+export const shifts = pgTable("shifts", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  branchId: integer("branch_id").references(() => branches.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  startTime: timestamp("start_time").defaultNow().notNull(),
+  endTime: timestamp("end_time"),
+  startCash: decimal("start_cash", { precision: 12, scale: 2 }).notNull().default("0"),
+  endCash: decimal("end_cash", { precision: 12, scale: 2 }),
+  expectedCash: decimal("expected_cash", { precision: 12, scale: 2 }).default("0"),
+  status: text("status").notNull().default("open"), // open, closed
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Sales: Transactions
+export const sales = pgTable("sales", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  branchId: integer("branch_id").references(() => branches.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  shiftId: integer("shift_id").references(() => shifts.id).notNull(),
+  subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull().default("0"),
+  discountAmount: decimal("discount_amount", { precision: 12, scale: 2 }).default("0"),
+  surchargeAmount: decimal("surcharge_amount", { precision: 12, scale: 2 }).default("0"),
+  total: decimal("total", { precision: 12, scale: 2 }).notNull().default("0"),
+  paymentMethodId: integer("payment_method_id").references(() => paymentMethods.id),
+  terminalId: integer("terminal_id").references(() => paymentTerminals.id),
+  paymentMethod: text("payment_method").notNull().default("cash"), // Legacy, for compatibility
+  status: text("status").notNull().default("completed"), // completed, cancelled
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Sale Items: Products within a sale
+export const saleItems = pgTable("sale_items", {
+  id: serial("id").primaryKey(),
+  saleId: integer("sale_id").references(() => sales.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
+});
+
+// POS Relations
+export const shiftsRelations = relations(shifts, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [shifts.tenantId],
+    references: [tenants.id],
+  }),
+  branch: one(branches, {
+    fields: [shifts.branchId],
+    references: [branches.id],
+  }),
+  user: one(users, {
+    fields: [shifts.userId],
+    references: [users.id],
+  }),
+  sales: many(sales),
+}));
+
+export const salesRelations = relations(sales, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [sales.tenantId],
+    references: [tenants.id],
+  }),
+  branch: one(branches, {
+    fields: [sales.branchId],
+    references: [branches.id],
+  }),
+  user: one(users, {
+    fields: [sales.userId],
+    references: [users.id],
+  }),
+  shift: one(shifts, {
+    fields: [sales.shiftId],
+    references: [shifts.id],
+  }),
+  paymentMethod: one(paymentMethods, {
+    fields: [sales.paymentMethodId],
+    references: [paymentMethods.id],
+  }),
+  terminal: one(paymentTerminals, {
+    fields: [sales.terminalId],
+    references: [paymentTerminals.id],
+  }),
+  items: many(saleItems),
+}));
+
+export const saleItemsRelations = relations(saleItems, ({ one }) => ({
+  sale: one(sales, {
+    fields: [saleItems.saleId],
+    references: [sales.id],
+  }),
+  product: one(products, {
+    fields: [saleItems.productId],
     references: [products.id],
   }),
 }));
