@@ -74,10 +74,14 @@ export function CreatableCombobox({
           </Button>
         }
       />
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-2xl shadow-2xl border-slate-100" align="start">
+      <PopoverContent 
+        className="w-(--anchor-width) p-0 rounded-2xl shadow-2xl border-slate-100 animate-in fade-in zoom-in-95 duration-200" 
+        align="start" 
+        sideOffset={8}
+      >
         <Command>
           <CommandInput 
-            placeholder={`Buscar ${placeholder.toLowerCase()}...`} 
+            placeholder={placeholder} 
             value={searchValue}
             onValueChange={setSearchValue}
           />
