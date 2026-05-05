@@ -245,47 +245,47 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
               </div>
 
               {/* 03. Financial Summary Card */}
-              <div className="relative p-8 rounded-[2.5rem] bg-slate-950 text-white overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-1000 delay-500">
-                <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-indigo-500/20 blur-3xl rounded-full" />
+              <div className="relative p-8 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 overflow-hidden shadow-xl animate-in fade-in zoom-in-95 duration-1000 delay-500">
+                <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-indigo-500/10 blur-3xl rounded-full" />
                 <div className="relative z-10 space-y-8">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Estructura de Precios</h4>
-                    <DollarSign className="w-5 h-5 text-indigo-400 opacity-50" />
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">Estructura de Precios</h4>
+                    <DollarSign className="w-5 h-5 text-indigo-600/30 dark:text-indigo-400/50" />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="cost" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Costo</Label>
+                      <Label htmlFor="cost" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Costo</Label>
                       <div className="relative group">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
                         <Input
                           id="cost"
                           type="number"
                           step="0.01"
                           value={formData.cost}
                           onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                          className="pl-8 h-12 bg-white/5 border-none rounded-xl text-white placeholder:text-white/20 focus:bg-white/10 transition-all"
+                          className="pl-8 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="markup" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Markup (%)</Label>
+                      <Label htmlFor="markup" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Markup (%)</Label>
                       <Input
                         id="markup"
                         type="number"
                         value={formData.markup}
                         onChange={(e) => setFormData({ ...formData, markup: e.target.value })}
-                        className="h-12 bg-white/5 border-none rounded-xl text-white focus:bg-white/10"
+                        className="h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="iva" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">IVA (%)</Label>
+                      <Label htmlFor="iva" className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">IVA (%)</Label>
                       <Input
                         id="iva"
                         type="number"
                         value={formData.iva}
                         onChange={(e) => setFormData({ ...formData, iva: e.target.value })}
-                        className="h-12 bg-white/5 border-none rounded-xl text-white focus:bg-white/10"
+                        className="h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
                       />
                     </div>
                   </div>
@@ -295,30 +295,30 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                       id="priceIncludesIva" 
                       checked={formData.priceIncludesIva}
                       onCheckedChange={(checked) => setFormData({ ...formData, priceIncludesIva: !!checked })}
-                      className="border-white/20 data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
+                      className="border-slate-300 dark:border-slate-700 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
                     />
-                    <label htmlFor="priceIncludesIva" className="text-[10px] font-medium text-slate-400 cursor-pointer select-none">
+                    <label htmlFor="priceIncludesIva" className="text-[10px] font-medium text-slate-600 dark:text-slate-400 cursor-pointer select-none">
                       El precio de venta final ya incluye IVA
                     </label>
                   </div>
 
-                  <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-2 flex-1">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-400 ml-1">Precio de Venta Sugerido</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 ml-1">Precio de Venta Sugerido</Label>
                       <div className="relative group">
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-4xl font-light text-slate-500 tracking-tighter">$</span>
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-4xl font-light text-slate-300 tracking-tighter">$</span>
                         <Input
                           id="price"
                           type="number"
                           step="0.01"
                           value={formData.price}
                           onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="pl-8 h-20 text-6xl font-black text-white bg-transparent border-none focus:ring-0 focus:outline-none transition-all tracking-tighter"
+                          className="pl-8 h-20 text-6xl font-black text-slate-900 dark:text-white bg-transparent border-none focus:ring-0 focus:outline-none transition-all tracking-tighter"
                         />
                       </div>
                     </div>
                     <div className="pb-4">
-                      <span className="text-[10px] text-emerald-400 font-bold px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Cálculo en Tiempo Real</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">Cálculo en Tiempo Real</span>
                     </div>
                   </div>
                 </div>
@@ -374,17 +374,17 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
             {/* Footer Section */}
             <DialogFooter className="p-8 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 gap-4 sm:justify-end mt-auto">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={() => setOpen(false)} 
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setOpen(false)}
                 className="px-8 h-14 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-slate-50 transition-all"
               >
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
+              <Button
+                type="submit"
+                disabled={isLoading}
                 className="bg-slate-950 hover:bg-indigo-600 text-white px-12 h-14 rounded-2xl shadow-2xl shadow-indigo-200 dark:shadow-none transition-all duration-500 font-bold uppercase tracking-widest text-[10px] flex items-center gap-3"
               >
                 {isLoading ? (
