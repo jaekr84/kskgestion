@@ -56,6 +56,27 @@ export const usersToBranches = pgTable("users_to_branches", {
   pk: [t.userId, t.branchId],
 }));
 
+// Product Categories
+export const productCategories = pgTable("product_categories", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Suppliers
+export const suppliers = pgTable("suppliers", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  cuit: text("cuit"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Products: Shared within a tenant but can have specific stock per branch
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -66,7 +87,12 @@ export const products = pgTable("products", {
   barcode: text("barcode"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   cost: decimal("cost", { precision: 10, scale: 2 }),
-  categoryId: integer("category_id"),
+  markup: decimal("markup", { precision: 10, scale: 2 }).default("0"),
+  iva: decimal("iva", { precision: 10, scale: 2 }).default("21"),
+  priceIncludesIva: boolean("price_includes_iva").default(true),
+  minStock: integer("min_stock").default(0),
+  categoryId: integer("category_id").references(() => productCategories.id),
+  supplierId: integer("supplier_id").references(() => suppliers.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -84,6 +110,8 @@ export const tenantsRelations = relations(tenants, ({ many }) => ({
   branches: many(branches),
   users: many(users),
   roles: many(roles),
+  productCategories: many(productCategories),
+  suppliers: many(suppliers),
 }));
 
 export const branchesRelations = relations(branches, ({ one, many }) => ({
@@ -122,5 +150,48 @@ export const usersToBranchesRelations = relations(usersToBranches, ({ one }) => 
   branch: one(branches, {
     fields: [usersToBranches.branchId],
     references: [branches.id],
+  }),
+}));
+
+export const productCategoriesRelations = relations(productCategories, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [productCategories.tenantId],
+    references: [tenants.id],
+  }),
+  products: many(products),
+}));
+
+export const suppliersRelations = relations(suppliers, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [suppliers.tenantId],
+    references: [tenants.id],
+  }),
+  products: many(products),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [products.tenantId],
+    references: [tenants.id],
+  }),
+  category: one(productCategories, {
+    fields: [products.categoryId],
+    references: [productCategories.id],
+  }),
+  supplier: one(suppliers, {
+    fields: [products.supplierId],
+    references: [suppliers.id],
+  }),
+  inventory: many(inventory),
+}));
+
+export const inventoryRelations = relations(inventory, ({ one }) => ({
+  branch: one(branches, {
+    fields: [inventory.branchId],
+    references: [branches.id],
+  }),
+  product: one(products, {
+    fields: [inventory.productId],
+    references: [products.id],
   }),
 }));
