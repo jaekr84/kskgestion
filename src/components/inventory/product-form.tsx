@@ -23,6 +23,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
     name: product?.name || "",
     description: product?.description || "",
     sku: product?.sku || "",
+    externalSku: product?.externalSku || "",
     barcode: product?.barcode || "",
     price: product?.price || "",
     cost: product?.cost || "",
@@ -68,6 +69,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
 
     const data = {
       ...formData,
+      externalSku: formData.externalSku || undefined,
       price: parseFloat(formData.price),
       cost: formData.cost ? parseFloat(formData.cost) : undefined,
       markup: parseFloat(formData.markup),
@@ -92,7 +94,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
     if (result.success) {
       setOpen(false);
       if (!product) setFormData({
-        name: "", description: "", sku: "", barcode: "", price: "", cost: "",
+        name: "", description: "", sku: "", externalSku: "", barcode: "", price: "", cost: "",
         markup: "0", iva: "21", priceIncludesIva: true, minStock: "0",
         categoryId: "", supplierId: ""
       });
@@ -214,7 +216,7 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                   <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-2">
                     <Label htmlFor="sku" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">SKU Interno</Label>
                     <div className="relative group">
@@ -223,7 +225,20 @@ export function ProductForm({ branches, categories = [], suppliers = [], product
                         id="sku"
                         value={formData.sku}
                         onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                        placeholder="SKU-001"
+                        placeholder="INT-001"
+                        className="pl-10 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="externalSku" className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-500 ml-1">SKU Externo</Label>
+                    <div className="relative group">
+                      <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <Input
+                        id="externalSku"
+                        value={formData.externalSku}
+                        onChange={(e) => setFormData({ ...formData, externalSku: e.target.value })}
+                        placeholder="EXT-999"
                         className="pl-10 h-12 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
                       />
                     </div>

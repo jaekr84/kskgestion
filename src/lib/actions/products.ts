@@ -29,6 +29,7 @@ export async function createProductAction(data: {
   minStock?: number;
   categoryId?: number;
   supplierId?: number;
+  externalSku?: string;
   initialStock?: { branchId: number; stock: number }[];
 }) {
   try {
@@ -48,6 +49,7 @@ export async function createProductAction(data: {
       minStock: data.minStock,
       categoryId: data.categoryId,
       supplierId: data.supplierId,
+      externalSku: data.externalSku,
     }).returning();
 
     if (data.initialStock && data.initialStock.length > 0) {
@@ -80,6 +82,7 @@ export async function updateProductAction(id: number, data: {
   minStock?: number;
   categoryId?: number;
   supplierId?: number;
+  externalSku?: string;
 }) {
   try {
     const tenantId = await getTenantId();
@@ -98,6 +101,7 @@ export async function updateProductAction(id: number, data: {
         minStock: data.minStock,
         categoryId: data.categoryId,
         supplierId: data.supplierId,
+        externalSku: data.externalSku,
       })
       .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 
