@@ -7,6 +7,7 @@ import { getTenant } from "@/lib/actions/tenants";
 import { getPaymentMethodsAction, getTerminalsAction } from "@/lib/actions/payments";
 import { Users, Building2, ShieldCheck, Settings2, CreditCard } from "lucide-react";
 import { PaymentsTab } from "@/components/settings/payments-tab";
+import { RolesTab } from "@/components/settings/roles-tab";
 
 export default async function SettingsPage() {
   const [{ users, roles, branches }, tenant, paymentMethods, terminals] = await Promise.all([
@@ -81,10 +82,7 @@ export default async function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="roles">
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h3 className="text-xl font-bold mb-4">Roles y Permisos</h3>
-            <p className="text-slate-500">Próximamente: Personaliza qué módulos puede ver cada rol.</p>
-          </div>
+          <RolesTab initialRoles={roles} initialUsers={users} />
         </TabsContent>
 
         <TabsContent value="payments">

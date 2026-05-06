@@ -105,6 +105,23 @@ export function POSContainer({
     setIsLoadingShift(false);
   }
 
+  // Filtered lists based on selected branch
+  const filteredPaymentMethods = useMemo(() => {
+    if (!selectedBranchId) return [];
+    return paymentMethods.filter(pm => pm.branchId === selectedBranchId);
+  }, [paymentMethods, selectedBranchId]);
+
+  const filteredTerminals = useMemo(() => {
+    if (!selectedBranchId) return [];
+    return terminals.filter(t => t.branchId === selectedBranchId);
+  }, [terminals, selectedBranchId]);
+
+  // Reset selections when branch changes
+  useEffect(() => {
+    setSelectedPaymentMethodId(null);
+    setSelectedTerminalId(null);
+  }, [selectedBranchId]);
+
   // Cart Logic
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -504,12 +521,12 @@ export function POSContainer({
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
-            {paymentMethods.length === 0 ? (
+            {filteredPaymentMethods.length === 0 ? (
               <p className="col-span-2 text-[10px] text-slate-400 italic text-center py-4 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
                 Configura medios de pago en Ajustes
               </p>
             ) : (
-              paymentMethods.map((pm) => {
+              filteredPaymentMethods.map((pm) => {
                 const Icon = pm.type === 'cash' ? Banknote : pm.type === 'digital' ? Smartphone : CreditCard;
                 return (
                   <Button
@@ -534,11 +551,11 @@ export function POSContainer({
           </div>
 
           {/* Dynamic Terminal Selection */}
-          {selectedPaymentMethodId && paymentMethods.find(pm => pm.id === selectedPaymentMethodId)?.type !== 'cash' && terminals.length > 0 && (
+          {selectedPaymentMethodId && filteredPaymentMethods.find(pm => pm.id === selectedPaymentMethodId)?.type !== 'cash' && filteredTerminals.length > 0 && (
             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
               <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Terminal / Dispositivo</h2>
               <div className="grid grid-cols-2 gap-2">
-                {terminals.filter(t => t.branchId === selectedBranchId).map((t) => (
+                {filteredTerminals.map((t) => (
                   <Button
                     key={t.id}
                     variant={selectedTerminalId === t.id ? 'default' : 'outline'}

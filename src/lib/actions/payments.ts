@@ -7,11 +7,14 @@ import { revalidatePath } from "next/cache";
 import { getTenantId } from "./tenants";
 
 // Getters
-export async function getPaymentMethodsAction() {
+export async function getPaymentMethodsAction(branchId?: number) {
   try {
     const tenantId = await getTenantId();
     return await db.query.paymentMethods.findMany({
-      where: eq(paymentMethods.tenantId, tenantId),
+      where: and(
+        eq(paymentMethods.tenantId, tenantId),
+        branchId ? eq(paymentMethods.branchId, branchId) : undefined
+      ),
       orderBy: [paymentMethods.name],
     });
   } catch (error) {
@@ -40,11 +43,13 @@ export async function getTerminalsAction() {
 export async function createPaymentMethodAction(data: {
   name: string;
   type: string;
+  branchId: number;
 }) {
   try {
     const tenantId = await getTenantId();
     await db.insert(paymentMethods).values({
       tenantId,
+      branchId: data.branchId,
       name: data.name,
       type: data.type,
     });

@@ -69,6 +69,7 @@ export const productCategories = pgTable("product_categories", {
 export const paymentMethods = pgTable("payment_methods", {
   id: serial("id").primaryKey(),
   tenantId: integer("tenant_id").references(() => tenants.id).notNull(),
+  branchId: integer("branch_id").references(() => branches.id).notNull(),
   name: text("name").notNull(), // e.g., "Efectivo", "Tarjeta de Crédito"
   type: text("type").notNull(), // e.g., "cash", "card", "transfer", "digital"
   isActive: boolean("is_active").default(true).notNull(),
